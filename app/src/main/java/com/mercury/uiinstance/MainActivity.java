@@ -12,7 +12,7 @@ public class MainActivity extends AppCompatActivity {
 
     FlowLayout mFlowLayout;
 
-    String[] appNames = {"支付宝", "微信", "手机淘宝", "QQ", "网易云音乐","王者荣耀","知乎"};
+    String[] appNames = {"Java", "Android", "C", "C++", "JavaScript", "Python", "Ruby", "C#"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
                     gradientDrawable);
             stateListDrawable.addState(new int[]{}, gradientDrawable2);
 
-            tv.setBackgroundDrawable(stateListDrawable);
+            tv.setBackground(stateListDrawable);
 
             mFlowLayout.addView(tv);
         }
