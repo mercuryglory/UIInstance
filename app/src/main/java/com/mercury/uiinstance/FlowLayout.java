@@ -70,7 +70,7 @@ public class FlowLayout extends ViewGroup {
             } else if (line.getLineWidth() + horizontalSpacing + childView.getMeasuredWidth() >
                     noPaddingWidth) {
                 //5.如果当前line的宽+水平间距+子View的宽大于noPaddingWidth,则child需要换行
-                //需要先存放好之前的line对象，否则会造成丢失
+                //要先存放之前的line对象，否则会缺失View
                 lineList.add(line);
 
                 line = new Line();//创建新的Line
@@ -86,15 +86,15 @@ public class FlowLayout extends ViewGroup {
             }
         }
 
-        //for循环结束了，lineList存放了所有的Line，而每个Line又记录了自己行所有的VIew;
-        //计算FLowLayout需要的高度
-        int height = getPaddingTop() + getPaddingTop();//先计算上下的padding值
+        //循环结束，lineList存放了所有的Line，而每个Line又记录了自己行所有的View;
+        //现在计算FLowLayout需要的高度
+        int height = getPaddingTop() + getPaddingBottom();//先计算上下的padding值
         for (int i = 0; i < lineList.size(); i++) {
             height += lineList.get(i).getLineHeight();//再加上所有行的高度
         }
         height += (lineList.size() - 1) * verticalSpacing;//最后加上所有的行间距
 
-        //设置当前控件的宽高，或者向父VIew申请宽高
+        //设置当前控件的宽高，或者向父View申请宽高
         setMeasuredDimension(width, height);
     }
 
@@ -113,7 +113,7 @@ public class FlowLayout extends ViewGroup {
                 paddingTop += verticalSpacing + lineList.get(i - 1).getLineHeight();
             }
 
-            ArrayList<View> viewList = line.getViewList();//获取line的view的集合
+            ArrayList<View> viewList = line.getViewList();//获取line所包含的所有view的集合
 
             //1.获取每行的留白的宽度
             int remainSpacing = getLineRemainSpacing(line);
@@ -147,7 +147,7 @@ public class FlowLayout extends ViewGroup {
     /**
      *
      * @param   line
-     * @return  获取指定line的留白
+     * @return  获取指定Line的留白
      */
     private int getLineRemainSpacing(Line line) {
         return getMeasuredWidth() - getPaddingLeft() - getPaddingRight() - line.getLineWidth();
@@ -168,7 +168,7 @@ public class FlowLayout extends ViewGroup {
         }
 
         /**
-         * 记录子VIew
+         * 记录子View
          *
          * @param child
          */
@@ -178,10 +178,10 @@ public class FlowLayout extends ViewGroup {
 
                 //1.更新Line的width
                 if (viewList.size() == 1) {
-                    //说明添加的是第一个子View，那么line的宽就是子view的宽度
+                    //说明添加的是第一个子View，那么line的宽就是子View的宽度
                     width = child.getMeasuredWidth();
                 } else {
-                    //如果添加的不是第一个子View，那么应该加等于水平间距和子VIew的宽度
+                    //如果添加的不是第一个子View，那么应该加等于水平间距和子View的宽度
                     width += child.getMeasuredWidth() + horizontalSpacing;
                 }
                 //2.更新line的height
@@ -207,7 +207,7 @@ public class FlowLayout extends ViewGroup {
 
         /**
          *
-         * @return  获取当前行的所有的子View
+         * @return  获取当前行的所有的子View的集合
          */
         private ArrayList<View> getViewList() {
             return viewList;

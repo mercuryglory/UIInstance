@@ -6,13 +6,15 @@ import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
     FlowLayout mFlowLayout;
 
-    String[] appNames = {"Java", "Android", "C", "C++", "JavaScript", "Python", "Ruby", "C#"};
+    String[] appNames = {"Java", "Android", "C", "C++", "JavaScript", "Python", "Ruby", "C#",
+            "Node.js", "HTML", "PHP", "COCOS2D-X"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,12 @@ public class MainActivity extends AppCompatActivity {
             stateListDrawable.addState(new int[]{}, gradientDrawable2);
 
             tv.setBackground(stateListDrawable);
+            tv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                }
+            });
 
             mFlowLayout.addView(tv);
         }
