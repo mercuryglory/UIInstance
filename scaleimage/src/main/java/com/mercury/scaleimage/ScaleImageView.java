@@ -149,6 +149,7 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
                 mLastX = event.getX();
                 mLastY = event.getY();
                 mIsDragging = false;
+                requestDisallowIntercept(true);
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -159,7 +160,6 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
                 if (!mIsDragging) {
                     mIsDragging = Math.sqrt(dx * dx + dy * dy) > mTouchSlop;
                 }
-
                 if (mIsDragging && !mPointerScaling) {
 
                     //相比原图片已经放大了 需要可移动,如果正在缩放，则不可移动
@@ -167,10 +167,27 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
                         mScaleMatrix.postTranslate(dx, dy);
                         checkAndDisplayMatrix();
 
-//                        Log.i(TAG, "move_edge: " + mScrollEdge);
-
                     }
+
                 }
+                RectF rectF = new RectF();
+                rectF.set(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
+                mScaleMatrix.mapRect(rectF);
+                Log.i(TAG, "rectFWidth: " + rectF.right + ",dx :" + dx);
+
+                if (rectF.right <= getImageViewWidth() || rectF.left >= 0) {
+                    requestDisallowIntercept(false);
+                } else {
+                    requestDisallowIntercept(true);
+                }
+
+//                if (mScrollEdge == EDGE_BOTH || (mScrollEdge == EDGE_LEFT && dx >= 1f) ||
+//                        (mScrollEdge == EDGE_RIGHT && dx <= 1f)) {
+//                    requestDisallowIntercept(false);
+//                } else {
+//                    requestDisallowIntercept(true);
+//                }
+
                 mLastX = x;
                 mLastY = y;
 
@@ -207,62 +224,6 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
         return true;
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                Log.i(TAG, "dispatchTouchEvent: down");
-                requestDisallowIntercept(true);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                float dx = x - mLastDisX;
-                float dy = y - mLastDisY;
-
-                checkAndDisplayMatrix();
-//                final RectF rectF = getMatrixRectF();
-//                if (rectF == null) {
-//                    return false;
-//                }
-//
-//                final float width = rectF.width();
-//
-//                final int viewWidth = getImageViewWidth();
-//
-//                Log.i(TAG, "width: " + width + ",viewWidth: " + viewWidth + ",left: " + rectF.left
-//                        + ",right:" + rectF.right);
-//
-//                if (width <= viewWidth) {
-//                    mScrollEdge = EDGE_BOTH;
-//                } else if (rectF.left > 0) {
-//                    mScrollEdge = EDGE_LEFT;
-//                } else if (rectF.right < viewWidth) {
-//                    mScrollEdge = EDGE_RIGHT;
-//                } else {
-//                    mScrollEdge = EDGE_NONE;
-//                }
-//
-//                if (mScrollEdge == EDGE_BOTH || (mScrollEdge == EDGE_LEFT && dx >= 1f) ||
-//                        (mScrollEdge == EDGE_RIGHT && dx <= 1f)) {
-//                    requestDisallowIntercept(false);
-//                } else {
-//                    requestDisallowIntercept(true);
-//                }
-                Log.i(TAG, "dispatchTouchEvent: move");
-                break;
-            case MotionEvent.ACTION_UP:
-                Log.i(TAG, "dispatchTouchEvent: up");
-                break;
-        }
-
-        mLastDisX = x;
-        mLastDisY = y;
-
-
-        return super.dispatchTouchEvent(event);
-    }
 
     private void requestDisallowIntercept(boolean request) {
         if (getParent() != null) {

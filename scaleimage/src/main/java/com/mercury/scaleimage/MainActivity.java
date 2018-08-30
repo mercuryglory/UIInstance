@@ -9,6 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -34,8 +37,10 @@ public class MainActivity extends AppCompatActivity {
             @NonNull
             @Override
             public Object instantiateItem(@NonNull ViewGroup container, int position) {
-                ScaleImageView scaleImageView = new ScaleImageView(container.getContext());
-                scaleImageView.setImageResource(idList[position]);
+//                ScaleImageView scaleImageView = new ScaleImageView(container.getContext());
+//                scaleImageView.setImageResource(idList[position]);
+                SubsamplingScaleImageView scaleImageView = new SubsamplingScaleImageView(container.getContext());
+                scaleImageView.setImage(ImageSource.resource(idList[position]));
                 container.addView(scaleImageView);
                 return scaleImageView;
             }
