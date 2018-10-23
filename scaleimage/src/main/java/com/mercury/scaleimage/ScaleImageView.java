@@ -46,6 +46,8 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
 
     private boolean mPointerScaling;
     private float prevScale;
+    private float prevTranslateX;
+    private float prevTranslateY;
 
     private int mScrollEdge = EDGE_BOTH;
 
@@ -53,6 +55,9 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
     private static final int EDGE_LEFT = 0;
     private static final int EDGE_RIGHT = 1;
     private static final int EDGE_BOTH = 2;
+
+    private static final int MIN_FLING = 50;
+    private static final int MIN_FLING_VELOCITY = 500;
 
     public ScaleImageView(Context context) {
         this(context, null);
@@ -90,7 +95,27 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
                 }
 
                 Log.i(TAG, "currentScale: " + currentScale + ",targetScale: " + targetScale);
-                updateScaleSmoothly(currentScale, targetScale, x, y);
+                scaleSmoothly(currentScale, targetScale, x, y);
+                return true;
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, final float velocityX, float
+                    velocityY) {
+                if ((Math.abs(e1.getX() - e2.getX()) > MIN_FLING || Math.abs(e1.getY() - e2.getY()) > MIN_FLING)
+                        && (Math.abs(velocityX) > MIN_FLING_VELOCITY || Math.abs(velocityY) > MIN_FLING_VELOCITY)
+                        &&!mPointerScaling) {
+
+//                    translateSmoothly(velocityX * 0.25f, velocityY * 0.25f);
+                    return true;
+                }
+
+                return super.onFling(e1, e2, velocityX, velocityY);
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                performClick();
                 return true;
             }
         });
@@ -143,13 +168,17 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
             return false;
         }
         mScaleGestureDetector.onTouchEvent(event);
+        requestDisallowIntercept(true);
+        Log.i(TAG, "onTouchEvent: " + event.getActionMasked());
+
+
 
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 mLastX = event.getX();
                 mLastY = event.getY();
-                mIsDragging = false;
                 requestDisallowIntercept(true);
+                mIsDragging = false;
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -163,30 +192,17 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
                 if (mIsDragging && !mPointerScaling) {
 
                     //相比原图片已经放大了 需要可移动,如果正在缩放，则不可移动
-                    if (getScale() > defaultScale) {
+//                    if (getScale() > defaultScale) {
                         mScaleMatrix.postTranslate(dx, dy);
                         checkAndDisplayMatrix();
-
-                    }
-
+//                    }
                 }
-                RectF rectF = new RectF();
-                rectF.set(0, 0, getDrawable().getIntrinsicWidth(), getDrawable().getIntrinsicHeight());
-                mScaleMatrix.mapRect(rectF);
-                Log.i(TAG, "rectFWidth: " + rectF.right + ",dx :" + dx);
 
-                if (rectF.right <= getImageViewWidth() || rectF.left >= 0) {
+                if (mScrollEdge == EDGE_BOTH || (mScrollEdge == EDGE_LEFT && Math.abs(dx) > 15) ||
+                        (mScrollEdge == EDGE_RIGHT && Math.abs(dx) > 15)) {
+                    Log.i(TAG, "mScrollEdge: " + mScrollEdge);
                     requestDisallowIntercept(false);
-                } else {
-                    requestDisallowIntercept(true);
                 }
-
-//                if (mScrollEdge == EDGE_BOTH || (mScrollEdge == EDGE_LEFT && dx >= 1f) ||
-//                        (mScrollEdge == EDGE_RIGHT && dx <= 1f)) {
-//                    requestDisallowIntercept(false);
-//                } else {
-//                    requestDisallowIntercept(true);
-//                }
 
                 mLastX = x;
                 mLastY = y;
@@ -194,10 +210,13 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
+                mScrollEdge = EDGE_NONE;
+                mIsDragging = false;
                 mPointerScaling = false;
                 break;
 
             case MotionEvent.ACTION_POINTER_DOWN:
+                requestDisallowIntercept(true);
                 int pointerCount = event.getPointerCount();
                 if (pointerCount == 2) {
                     mLastX = (event.getX(0) + event.getX(1)) / 2;
@@ -214,7 +233,7 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
                 }
 
                 if (getScale() < defaultScale) {
-                    updateScaleSmoothly(getScale(), defaultScale, event.getX(), event.getY());
+                    scaleSmoothly(getScale(), defaultScale, event.getX(), event.getY());
                 }
                 break;
             default:
@@ -231,7 +250,7 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
         }
     }
 
-    private void updateScaleSmoothly(float currentScale, float targetScale, final float x, final float y) {
+    private void scaleSmoothly(float currentScale, float targetScale, final float x, final float y) {
         ValueAnimator animator = ValueAnimator.ofFloat(currentScale, targetScale);
         prevScale = currentScale;
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -244,6 +263,26 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
             }
         });
         animator.setDuration(300).start();
+    }
+
+    private void translateSmoothly(final float translateX, final float translateY) {
+        prevTranslateX = 0;
+        prevTranslateY = 0;
+        ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
+        animator.setDuration(500);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                Log.i(TAG, "onAnimationUpdate: "+animation.getAnimatedFraction());
+                float passedX = animation.getAnimatedFraction() * translateX;
+                float passedY = animation.getAnimatedFraction() * translateY;
+                mScaleMatrix.postTranslate(passedX - prevTranslateX, passedY - prevTranslateY);
+                prevTranslateX = passedX;
+                prevTranslateY = passedY;
+                checkAndDisplayMatrix();
+            }
+        });
+        animator.start();
     }
 
     private int getImageViewWidth() {
@@ -379,4 +418,7 @@ public class ScaleImageView extends AppCompatImageView implements View.OnLayoutC
         setImageMatrix(mScaleMatrix);
 
     }
+
+
+
 }

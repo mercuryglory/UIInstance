@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         }
         myAdapter.setData(list);
         mScrollLayout.setAdapter(myAdapter);
+        TextView textView = new TextView(this);
 
     }
 

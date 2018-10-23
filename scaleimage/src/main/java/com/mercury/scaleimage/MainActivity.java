@@ -3,14 +3,10 @@ package com.mercury.scaleimage;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-
-import com.davemorrissey.labs.subscaleview.ImageSource;
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
 
         final int[] idList = {R.drawable.test, R.drawable.test2, R.drawable.test3, R.drawable.test4, R
                 .drawable.test5};
-        ViewPager viewPager = findViewById(R.id.viewpager);
+        CustomViewPager viewPager = findViewById(R.id.viewpager);
         PagerAdapter adapter=new PagerAdapter() {
             @Override
             public int getCount() {
@@ -37,10 +33,10 @@ public class MainActivity extends AppCompatActivity {
             @NonNull
             @Override
             public Object instantiateItem(@NonNull ViewGroup container, int position) {
-//                ScaleImageView scaleImageView = new ScaleImageView(container.getContext());
-//                scaleImageView.setImageResource(idList[position]);
-                SubsamplingScaleImageView scaleImageView = new SubsamplingScaleImageView(container.getContext());
-                scaleImageView.setImage(ImageSource.resource(idList[position]));
+                ScaleImageView scaleImageView = new ScaleImageView(container.getContext());
+                scaleImageView.setImageResource(idList[position]);
+//                SubsamplingScaleImageView scaleImageView = new SubsamplingScaleImageView(container.getContext());
+//                scaleImageView.setImage(ImageSource.resource(idList[position]));
                 container.addView(scaleImageView);
                 return scaleImageView;
             }
